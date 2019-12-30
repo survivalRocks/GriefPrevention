@@ -1080,7 +1080,7 @@ class PlayerEventHandler implements Listener
 				String noAccessReason = toClaim.allowAccess(player);
 				if(noAccessReason != null)
 				{
-					instance.sendMessage(player, TextMode.Err, noAccessReason);
+					instance.sendMessage(player, TextMode.Err, noAccessReason, true);
 					event.setCancelled(true);
 					if(cause == TeleportCause.ENDER_PEARL)
 					    player.getInventory().addItem(new ItemStack(Material.ENDER_PEARL));
@@ -1177,9 +1177,7 @@ class PlayerEventHandler implements Listener
                        String ownerName = owner.getName();
                        if(ownerName == null) ownerName = "someone";
                        String message = instance.dataStore.getMessage(Messages.NotYourPet, ownerName);
-                       if(player.hasPermission("griefprevention.ignoreclaims"))
-                           message += "  " + instance.dataStore.getMessage(Messages.IgnoreClaimsAdvertisement);
-                       instance.sendMessage(player, TextMode.Err, message);
+                       instance.sendMessage(player, TextMode.Err, message, true);
                        event.setCancelled(true);
                        return;
                    }
@@ -1203,7 +1201,7 @@ class PlayerEventHandler implements Listener
 			String noBuildReason = instance.allowBuild(player, entity.getLocation(), Material.ITEM_FRAME); 
 			if(noBuildReason != null)
 			{
-				instance.sendMessage(player, TextMode.Err, noBuildReason);
+				instance.sendMessage(player, TextMode.Err, noBuildReason, true);
 				event.setCancelled(true);
 				return;
 			}			
@@ -1259,7 +1257,7 @@ class PlayerEventHandler implements Listener
 					String noContainersReason = claim.allowContainers(player);
 					if(noContainersReason != null)
 					{
-						instance.sendMessage(player, TextMode.Err, noContainersReason);
+						instance.sendMessage(player, TextMode.Err, noContainersReason, true);
 						event.setCancelled(true);
 						return;
 					}
@@ -1277,9 +1275,7 @@ class PlayerEventHandler implements Listener
                 if(claim.allowContainers(player) != null)
                 {
                     String message = instance.dataStore.getMessage(Messages.NoDamageClaimedEntity, claim.getOwnerName());
-                    if(player.hasPermission("griefprevention.ignoreclaims"))
-                        message += "  " + instance.dataStore.getMessage(Messages.IgnoreClaimsAdvertisement);
-					instance.sendMessage(player, TextMode.Err, message);
+					instance.sendMessage(player, TextMode.Err, message, true);
                     event.setCancelled(true);
                     return;
                 }
@@ -1296,8 +1292,7 @@ class PlayerEventHandler implements Listener
                 if(failureReason != null)
                 {
                     event.setCancelled(true);
-					instance.sendMessage(player, TextMode.Err, failureReason);
-                    return;                    
+					instance.sendMessage(player, TextMode.Err, failureReason, true);
                 }
             }
 		}
@@ -1323,7 +1318,7 @@ class PlayerEventHandler implements Listener
 	            if(errorMessage != null)
 	            {
 	                event.setCancelled(true);
-					instance.sendMessage(player, TextMode.Err, Messages.NoDamageClaimedEntity, claim.getOwnerName());
+					instance.sendMessage(player, TextMode.Err, Messages.NoDamageClaimedEntity, true, claim.getOwnerName());
 	                return;
 	            }
 	        }
@@ -1432,7 +1427,7 @@ class PlayerEventHandler implements Listener
 		String noBuildReason = instance.allowBuild(player, block.getLocation(), Material.WATER);
 		if(noBuildReason != null)
 		{
-			instance.sendMessage(player, TextMode.Err, noBuildReason);
+			instance.sendMessage(player, TextMode.Err, noBuildReason, true);
 			bucketEvent.setCancelled(true);
 			return;
 		}
@@ -1540,14 +1535,14 @@ class PlayerEventHandler implements Listener
 					return;
 			}
 		    
-			instance.sendMessage(player, TextMode.Err, noBuildReason);
+			instance.sendMessage(player, TextMode.Err, noBuildReason, true);
 			bucketEvent.setCancelled(true);
 			return;
 		}
 	}
 	
 	//when a player interacts with the world
-    @EventHandler(priority = EventPriority.LOWEST)
+    @EventHandler(priority = EventPriority.LOW, ignoreCancelled = true)
 	void onPlayerInteract(PlayerInteractEvent event)
 	{
 	    //not interested in left-click-on-air actions
@@ -1609,7 +1604,7 @@ class PlayerEventHandler implements Listener
                                     if(noBuildReason != null)
                                     {
                                         event.setCancelled(true);
-                                        instance.sendMessage(player, TextMode.Err, noBuildReason);
+                                        instance.sendMessage(player, TextMode.Err, noBuildReason, true);
                                         player.sendBlockChange(adjacentBlock.getLocation(), adjacentBlock.getType(), adjacentBlock.getData());
                                         return;
                                     }
@@ -1664,7 +1659,7 @@ class PlayerEventHandler implements Listener
 				if(noContainersReason != null)
 				{
 					event.setCancelled(true);
-					instance.sendMessage(player, TextMode.Err, noContainersReason);
+					instance.sendMessage(player, TextMode.Err, noContainersReason, true);
 					return;
 				}
 			}
@@ -1733,7 +1728,7 @@ class PlayerEventHandler implements Listener
 				if(noAccessReason != null)
 				{
 					event.setCancelled(true);
-					instance.sendMessage(player, TextMode.Err, noAccessReason);
+					instance.sendMessage(player, TextMode.Err, noAccessReason, true);
 					return;
 				}
 			}
@@ -1752,7 +1747,7 @@ class PlayerEventHandler implements Listener
 				if(noAccessReason != null)
 				{
 					event.setCancelled(true);
-					instance.sendMessage(player, TextMode.Err, noAccessReason);
+					instance.sendMessage(player, TextMode.Err, noAccessReason, true);
 					return;
 				}
 			}			
@@ -1771,7 +1766,7 @@ class PlayerEventHandler implements Listener
                 if(noContainerReason != null)
                 {
                     event.setCancelled(true);
-                    instance.sendMessage(player, TextMode.Err, noContainerReason);
+                    instance.sendMessage(player, TextMode.Err, noContainerReason, true);
                     return;
                 }
             }           
@@ -1796,7 +1791,7 @@ class PlayerEventHandler implements Listener
 				if(noBuildReason != null)
 				{
 					event.setCancelled(true);
-					instance.sendMessage(player, TextMode.Err, noBuildReason);
+					instance.sendMessage(player, TextMode.Err, noBuildReason, true);
 					return;
 				}
 			}
@@ -1889,7 +1884,7 @@ class PlayerEventHandler implements Listener
 								clickedBlockType);
 				if(noBuildReason != null)
 				{
-					instance.sendMessage(player, TextMode.Err, noBuildReason);
+					instance.sendMessage(player, TextMode.Err, noBuildReason, true);
 					event.setCancelled(true);
 				}
 				
@@ -1911,7 +1906,7 @@ class PlayerEventHandler implements Listener
 					String noBuildReason = claim.allowBuild(player, Material.OAK_BOAT); // Though only checks OAK_BOAT, permission should be same for all boats. Plus it being a boat doesn't seem to make a difference currently.
 					if(noBuildReason != null)
 					{
-						instance.sendMessage(player, TextMode.Err, noBuildReason);
+						instance.sendMessage(player, TextMode.Err, noBuildReason, true);
 						event.setCancelled(true);
 					}
 				}
@@ -1935,7 +1930,7 @@ class PlayerEventHandler implements Listener
 					String reason = claim.allowContainers(player);
 					if(reason != null)
 					{
-						instance.sendMessage(player, TextMode.Err, reason);
+						instance.sendMessage(player, TextMode.Err, reason, true);
 						event.setCancelled(true);
 					}
 				}
@@ -1964,7 +1959,7 @@ class PlayerEventHandler implements Listener
 				String noBuildReason = instance.allowBuild(player, clickedBlock.getLocation(), Material.MINECART);
 				if(noBuildReason != null)
 				{
-					instance.sendMessage(player, TextMode.Err, noBuildReason);
+					instance.sendMessage(player, TextMode.Err, noBuildReason, true);
 					event.setCancelled(true);
 					return;
 				}
@@ -2041,7 +2036,7 @@ class PlayerEventHandler implements Listener
 				//no claim case
 				if(claim == null)
 				{
-					instance.sendMessage(player, TextMode.Info, Messages.BlockNotClaimed);
+					instance.sendMessage(player, TextMode.Info, Messages.BlockNotClaimed, true);
 
                     // alert plugins of a visualization
                     Bukkit.getPluginManager().callEvent(new VisualizationEvent(player, Collections.<Claim>emptySet()));
@@ -2641,7 +2636,7 @@ class PlayerEventHandler implements Listener
 			{
 				event.setCancelled(true);
 				player.closeInventory();
-				GriefPrevention.sendMessage(player, TextMode.Err, noContainerReason);
+				GriefPrevention.sendMessage(player, TextMode.Err, noContainerReason, true);
 			}
 		}
 	}

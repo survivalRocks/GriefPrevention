@@ -174,7 +174,6 @@ public enum Messages
     NoTeleportPvPCombat,
     NoTNTDamageAboveSeaLevel,
     NoTNTDamageClaims,
-    IgnoreClaimsAdvertisement,
     NoPermissionForCommand,
     ClaimsListNoPermission,
     ExplosivesDisabled,

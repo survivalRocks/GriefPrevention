@@ -404,11 +404,7 @@ public class Claim
 		}
 		
 		//failure message for all other cases
-		String reason = GriefPrevention.instance.dataStore.getMessage(Messages.NoBuildPermission, this.getOwnerName());
-		if(player.hasPermission("griefprevention.ignoreclaims"))
-				reason += "  " + GriefPrevention.instance.dataStore.getMessage(Messages.IgnoreClaimsAdvertisement);
-		
-		return reason;
+		return GriefPrevention.instance.dataStore.getMessage(Messages.NoBuildPermission, this.getOwnerName());
 	}
 	
 	private boolean hasExplicitPermission(Player player, ClaimPermission level)
@@ -509,10 +505,7 @@ public class Claim
 		}
 		
 		//catch-all error message for all other cases
-		String reason = GriefPrevention.instance.dataStore.getMessage(Messages.NoAccessPermission, this.getOwnerName());
-		if(player.hasPermission("griefprevention.ignoreclaims"))
-			reason += "  " + GriefPrevention.instance.dataStore.getMessage(Messages.IgnoreClaimsAdvertisement);
-		return reason;
+		return GriefPrevention.instance.dataStore.getMessage(Messages.NoAccessPermission, this.getOwnerName());
 	}
 	
 	//inventory permission check
@@ -557,10 +550,7 @@ public class Claim
 		}
 		
 		//error message for all other cases
-		String reason = GriefPrevention.instance.dataStore.getMessage(Messages.NoContainersPermission, this.getOwnerName());
-		if(player.hasPermission("griefprevention.ignoreclaims"))
-			reason += "  " + GriefPrevention.instance.dataStore.getMessage(Messages.IgnoreClaimsAdvertisement);
-		return reason;
+		return GriefPrevention.instance.dataStore.getMessage(Messages.NoContainersPermission, this.getOwnerName());
 	}
 	
 	//grant permission check, relatively simple
@@ -596,10 +586,7 @@ public class Claim
 		}
 		
 		//generic error message
-		String reason = GriefPrevention.instance.dataStore.getMessage(Messages.NoPermissionTrust, this.getOwnerName());
-		if(player.hasPermission("griefprevention.ignoreclaims"))
-			reason += "  " + GriefPrevention.instance.dataStore.getMessage(Messages.IgnoreClaimsAdvertisement);
-		return reason;
+		return GriefPrevention.instance.dataStore.getMessage(Messages.NoPermissionTrust, this.getOwnerName());
 	}
 	
 	//grants a permission for a player or the public

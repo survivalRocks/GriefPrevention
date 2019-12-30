@@ -28,12 +28,14 @@ class SendPlayerMessageTask implements Runnable
 	private Player player;
 	private ChatColor color;
 	private String message;
+	private boolean actionbar;
 	
-	public SendPlayerMessageTask(Player player, ChatColor color, String message)
+	public SendPlayerMessageTask(Player player, ChatColor color, String message, boolean actionbar)
 	{
 		this.player = player;
 		this.color = color;
 		this.message = message;
+		this.actionbar = actionbar;
 	}
 
 	@Override
@@ -55,7 +57,7 @@ class SendPlayerMessageTask implements Runnable
 	    //otherwise send it immediately
 	    else
 	    {
-	        GriefPrevention.sendMessage(this.player, this.color, this.message);
+	        GriefPrevention.sendMessage(this.player, this.color, this.message, this.actionbar);
 	    }
 	}	
 }

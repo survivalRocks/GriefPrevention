@@ -611,7 +611,7 @@ public class EntityEventHandler implements Listener
         if(noBuildReason != null)
         {
         	event.setCancelled(true);
-        	GriefPrevention.sendMessage(playerRemover, TextMode.Err, noBuildReason);
+        	GriefPrevention.sendMessage(playerRemover, TextMode.Err, noBuildReason, true);
         }
     }
 	
@@ -629,7 +629,7 @@ public class EntityEventHandler implements Listener
         if(noBuildReason != null)
         {
         	event.setCancelled(true);
-        	GriefPrevention.sendMessage(event.getPlayer(), TextMode.Err, noBuildReason);
+        	GriefPrevention.sendMessage(event.getPlayer(), TextMode.Err, noBuildReason, true);
 			return;
         }
 		
@@ -687,8 +687,9 @@ public class EntityEventHandler implements Listener
 	
 	private void handleEntityDamageEvent(EntityDamageEvent event, boolean sendErrorMessagesToPlayers)
 	{
-	    //monsters are never protected
-        if(isMonster(event.getEntity())) return;
+		//monsters are never protected, but ofc name tagged ones be
+		boolean hostilePet = event.getEntity().getCustomName() == null || event.getEntity().getCustomName().contains("|");
+		if (isMonster(event.getEntity()) && hostilePet) return;
         
         //horse protections can be disabled
         if(event.getEntity() instanceof Horse && !GriefPrevention.instance.config_claims_protectHorses) return;
@@ -973,7 +974,7 @@ public class EntityEventHandler implements Listener
                     if(failureReason != null)
                     {
                         event.setCancelled(true);
-                        if(sendErrorMessagesToPlayers) GriefPrevention.sendMessage(attacker, TextMode.Err, failureReason);
+                        if(sendErrorMessagesToPlayers) GriefPrevention.sendMessage(attacker, TextMode.Err, failureReason, true);
                         return;
                     }
                 }
@@ -1007,9 +1008,7 @@ public class EntityEventHandler implements Listener
                                 String ownerName = owner.getName();
                                 if(ownerName == null) ownerName = "someone";
                                 String message = GriefPrevention.instance.dataStore.getMessage(Messages.NoDamageClaimedEntity, ownerName);
-                                if(attacker.hasPermission("griefprevention.ignoreclaims"))
-                                    message += "  " + GriefPrevention.instance.dataStore.getMessage(Messages.IgnoreClaimsAdvertisement);
-                                if(sendErrorMessagesToPlayers) GriefPrevention.sendMessage(attacker, TextMode.Err, message);
+                                if(sendErrorMessagesToPlayers) GriefPrevention.sendMessage(attacker, TextMode.Err, message, true);
                                 PreventPvPEvent pvpEvent = new PreventPvPEvent(new Claim(subEvent.getEntity().getLocation(), subEvent.getEntity().getLocation(), null, new ArrayList<String>(), new ArrayList<String>(), new ArrayList<String>(), new ArrayList<String>(), null));
                                 Bukkit.getPluginManager().callEvent(pvpEvent);
                                 if(!pvpEvent.isCancelled())
@@ -1037,10 +1036,8 @@ public class EntityEventHandler implements Listener
                                     event.setCancelled(true);
                                     String ownerName = GriefPrevention.instance.getServer().getOfflinePlayer(ownerID).getName();
                                     String message = GriefPrevention.instance.dataStore.getMessage(Messages.NoDamageClaimedEntity, ownerName);
-                                    if (attacker.hasPermission("griefprevention.ignoreclaims"))
-                                        message += "  " + GriefPrevention.instance.dataStore.getMessage(Messages.IgnoreClaimsAdvertisement);
                                     if (sendErrorMessagesToPlayers)
-                                        GriefPrevention.sendMessage(attacker, TextMode.Err, message);
+                                        GriefPrevention.sendMessage(attacker, TextMode.Err, message, true);
                                     return;
                                 }
                             }
@@ -1115,9 +1112,7 @@ public class EntityEventHandler implements Listener
                             if(sendErrorMessagesToPlayers)
                             {
                                 String message = GriefPrevention.instance.dataStore.getMessage(Messages.NoDamageClaimedEntity, claim.getOwnerName());
-                                if(attacker.hasPermission("griefprevention.ignoreclaims"))
-                                    message += "  " + GriefPrevention.instance.dataStore.getMessage(Messages.IgnoreClaimsAdvertisement);
-                                GriefPrevention.sendMessage(attacker, TextMode.Err, message);
+                                GriefPrevention.sendMessage(attacker, TextMode.Err, message, true);
                             }
                             event.setCancelled(true);
                         }
@@ -1290,9 +1285,7 @@ public class EntityEventHandler implements Listener
 				{
 					event.setCancelled(true);
 					String message = GriefPrevention.instance.dataStore.getMessage(Messages.NoDamageClaimedEntity, claim.getOwnerName());
-                    if(attacker.hasPermission("griefprevention.ignoreclaims"))
-                        message += "  " + GriefPrevention.instance.dataStore.getMessage(Messages.IgnoreClaimsAdvertisement);
-                    GriefPrevention.sendMessage(attacker, TextMode.Err, message);
+                    GriefPrevention.sendMessage(attacker, TextMode.Err, message, true);
                     event.setCancelled(true);
 				}
 				
@@ -1338,7 +1331,7 @@ public class EntityEventHandler implements Listener
 	                          if(thrower == null || claim.allowContainers(thrower) != null)
 	                          {
 								  event.setIntensity(effected, 0);
-	                              instance.sendMessage(thrower, TextMode.Err, Messages.NoDamageClaimedEntity, claim.getOwnerName());
+	                              instance.sendMessage(thrower, TextMode.Err, Messages.NoDamageClaimedEntity, true, claim.getOwnerName());
 	                              return;
 	                          }
 	                      }

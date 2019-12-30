@@ -108,7 +108,7 @@ public class BlockEventHandler implements Listener
 		String noBuildReason = GriefPrevention.instance.allowBreak(player, block, block.getLocation(), breakEvent);
 		if(noBuildReason != null)
 		{
-			GriefPrevention.sendMessage(player, TextMode.Err, noBuildReason);
+			GriefPrevention.sendMessage(player, TextMode.Err, noBuildReason, true);
 			breakEvent.setCancelled(true);
 			return;
 		}
@@ -185,7 +185,7 @@ public class BlockEventHandler implements Listener
             String noBuildReason = GriefPrevention.instance.allowBuild(player, block.getLocation(), block.getType());
             if(noBuildReason != null)
             {
-                GriefPrevention.sendMessage(player, TextMode.Err, noBuildReason);
+                GriefPrevention.sendMessage(player, TextMode.Err, noBuildReason, true);
                 placeEvent.setCancelled(true);
                 return;
             }
@@ -253,11 +253,11 @@ public class BlockEventHandler implements Listener
 						return;
 
 					placeEvent.setCancelled(true);
-					GriefPrevention.sendMessage(player, TextMode.Err, noContainerReason);
+					GriefPrevention.sendMessage(player, TextMode.Err, noContainerReason, true);
 					return;
 				}
 			}
-			GriefPrevention.sendMessage(player, TextMode.Err, noBuildReason);
+			GriefPrevention.sendMessage(player, TextMode.Err, noBuildReason, true);
 			placeEvent.setCancelled(true);
 			return;
 		}

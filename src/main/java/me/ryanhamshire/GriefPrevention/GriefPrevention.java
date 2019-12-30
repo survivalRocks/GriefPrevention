@@ -37,6 +37,8 @@ import me.ryanhamshire.GriefPrevention.events.PreventBlockBreakEvent;
 import me.ryanhamshire.GriefPrevention.events.SaveTrappedPlayerEvent;
 import me.ryanhamshire.GriefPrevention.events.TrustChangedEvent;
 import me.ryanhamshire.GriefPrevention.metrics.MetricsHandler;
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.TextComponent;
 import net.milkbowl.vault.economy.Economy;
 
 import org.bukkit.BanList;
@@ -2035,7 +2037,7 @@ public class GriefPrevention extends JavaPlugin
 				String noBuildReason = claim.allowBuild(player, Material.STONE);
 				if(noBuildReason != null)
 				{
-					GriefPrevention.sendMessage(player, TextMode.Err, noBuildReason);
+					GriefPrevention.sendMessage(player, TextMode.Err, noBuildReason, true);
 					return true;
 				}
 				
@@ -3357,6 +3359,12 @@ public class GriefPrevention extends JavaPlugin
 	{
 		sendMessage(player, color, messageID, 0, args);
 	}
+
+	public static void sendMessage (Player player, ChatColor color, Messages messageID, boolean actionbar,
+									String... args)
+	{
+		sendMessage(player, color, messageID, 0, actionbar, args);
+	}
 	
 	//sends a color-coded message to a player
 	public static void sendMessage(Player player, ChatColor color, Messages messageID, long delayInTicks, String... args)
@@ -3364,9 +3372,15 @@ public class GriefPrevention extends JavaPlugin
 		String message = GriefPrevention.instance.dataStore.getMessage(messageID, args);
 		sendMessage(player, color, message, delayInTicks);
 	}
+
+	public static void sendMessage (Player player, ChatColor color, Messages messageID, long delayInTicks, boolean actionbar, String... args)
+	{
+		String message = GriefPrevention.instance.dataStore.getMessage(messageID, args);
+		sendMessage(player, color, message, delayInTicks, actionbar);
+	}
 	
 	//sends a color-coded message to a player
-	public static void sendMessage(Player player, ChatColor color, String message)
+	public static void sendMessage(Player player, ChatColor color, String message, boolean actionbar)
 	{
 		if(message == null || message.length() == 0) return;
 		
@@ -3376,16 +3390,38 @@ public class GriefPrevention extends JavaPlugin
 		}
 		else
 		{
-			player.sendMessage(color + message);
+			if (actionbar) player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(color + message));
+			else player.sendMessage(color + message);
 		}
+	}
+
+	public static void sendMessage (Player player, ChatColor color, String message)
+	{
+		sendMessage(player, color, message, false);
 	}
 	
 	public static void sendMessage(Player player, ChatColor color, String message, long delayInTicks)
 	{
-		SendPlayerMessageTask task = new SendPlayerMessageTask(player, color, message);
+		SendPlayerMessageTask task = new SendPlayerMessageTask(player, color, message, false);
 
 		//Only schedule if there should be a delay. Otherwise, send the message right now, else the message will appear out of order.
 		if(delayInTicks > 0)
+		{
+			GriefPrevention.instance.getServer().getScheduler().runTaskLater(GriefPrevention.instance, task, delayInTicks);
+		}
+		else
+		{
+			task.run();
+		}
+	}
+
+	public static void sendMessage (Player player, ChatColor color, String message, long delayInTicks, boolean actionbar)
+	{
+		SendPlayerMessageTask task = new SendPlayerMessageTask(player, color, message, actionbar);
+
+		//Only schedule if there should be a delay. Otherwise, send the message right now, else the message will
+		// appear out of order.
+		if (delayInTicks > 0)
 		{
 			GriefPrevention.instance.getServer().getScheduler().runTaskLater(GriefPrevention.instance, task, delayInTicks);
 		}
@@ -3435,8 +3471,6 @@ public class GriefPrevention extends JavaPlugin
 			    if(material != Material.CHEST || playerData.getClaims().size() > 0 || GriefPrevention.instance.config_claims_automaticClaimsForNewPlayersRadius == -1)
 			    {
     			    String reason = this.dataStore.getMessage(Messages.NoBuildOutsideClaims);
-    				if(player.hasPermission("griefprevention.ignoreclaims"))
-    					reason += "  " + this.dataStore.getMessage(Messages.IgnoreClaimsAdvertisement);
     				reason += "  " + this.dataStore.getMessage(Messages.CreativeBasicsVideo2, DataStore.CREATIVE_VIDEO_URL);
     				return reason;
 			    }
@@ -3484,8 +3518,6 @@ public class GriefPrevention extends JavaPlugin
             if(this.creativeRulesApply(location) || this.config_claims_worldModes.get(location.getWorld()) == ClaimsMode.SurvivalRequiringClaims)
             {
                 String reason = this.dataStore.getMessage(Messages.NoBuildOutsideClaims);
-                if(player.hasPermission("griefprevention.ignoreclaims"))
-                    reason += "  " + this.dataStore.getMessage(Messages.IgnoreClaimsAdvertisement);
                 reason += "  " + this.dataStore.getMessage(Messages.CreativeBasicsVideo2, DataStore.CREATIVE_VIDEO_URL);
                 return reason;
             }
