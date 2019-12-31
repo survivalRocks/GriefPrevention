@@ -504,13 +504,13 @@ class PlayerEventHandler implements Listener
 	            makeSocialLogEntry(event.getPlayer().getName(), builder.toString());
 		    }
 		}
-		
+
 		//if requires access trust, check for permission
 		isMonitoredCommand = false;
-		String lowerCaseMessage = message.toLowerCase();
+
 		for(String monitoredCommand : instance.config_claims_commandsRequiringAccessTrust)
         {
-            if(lowerCaseMessage.startsWith(monitoredCommand))
+            if(message.split(" ")[0].equalsIgnoreCase(monitoredCommand))
             {
                 isMonitoredCommand = true;
                 break;
