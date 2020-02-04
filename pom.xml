@@ -18,8 +18,8 @@
             <url>https://papermc.io/repo/repository/maven-public/</url>
         </repository>
         <repository>
-            <id>spigot-repo</id>
-            <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
+            <id>spigot-repo</id> 
+            <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url> 
         </repository>
         <repository>
             <id>worldedit-worldguard-repo</id>
@@ -35,9 +35,9 @@
         <sourceDirectory>src/main/java</sourceDirectory>
         <testSourceDirectory>src/test/java</testSourceDirectory>
         <testResources>
-            <testResource>
-                <directory>src/test/resources</directory>
-            </testResource>
+          <testResource>
+            <directory>src/test/resources</directory>
+          </testResource>
         </testResources>
         <finalName>${project.name}</finalName>
         <resources>
@@ -71,48 +71,48 @@
     <dependencies>
         <!--Bukkit API-->
         <dependency>
-            <groupId>org.bukkit</groupId>
-            <artifactId>bukkit</artifactId>
-            <version>1.14.4-R0.1-SNAPSHOT</version>
-            <scope>provided</scope>
+                <groupId>org.bukkit</groupId>
+                <artifactId>bukkit</artifactId>
+                <version>1.14.4-R0.1-SNAPSHOT</version>
+                <scope>provided</scope>
         </dependency>
-        <!--Worldguard dependency-->
+         <!--Worldguard dependency-->
         <dependency>
-            <groupId>com.sk89q.worldguard</groupId>
-            <artifactId>worldguard-legacy</artifactId>
-            <version>7.0.0-SNAPSHOT</version>
-            <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.bukkit</groupId>
-                    <artifactId>bukkit</artifactId>
-                </exclusion>
-                <!--<exclusion>-->
-                <!--<groupId>com.sk89q.worldedit</groupId>-->
-                <!--<artifactId>worldedit-bukkit</artifactId>-->
-                <!--</exclusion>-->
-                <exclusion>
-                    <groupId>com.sk89q</groupId>
-                    <artifactId>commandbook</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.bstats</groupId>
-                    <artifactId>bstats-bukkit</artifactId>
-                </exclusion>
+                <groupId>com.sk89q.worldguard</groupId>
+                <artifactId>worldguard-legacy</artifactId>
+                <version>7.0.0-SNAPSHOT</version>
+                <scope>provided</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.bukkit</groupId>
+                        <artifactId>bukkit</artifactId>
+                    </exclusion>
+                    <!--<exclusion>-->
+                        <!--<groupId>com.sk89q.worldedit</groupId>-->
+                        <!--<artifactId>worldedit-bukkit</artifactId>-->
+                    <!--</exclusion>-->
+                    <exclusion>
+                        <groupId>com.sk89q</groupId>
+                        <artifactId>commandbook</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.bstats</groupId>
+                        <artifactId>bstats-bukkit</artifactId>
+                    </exclusion>
             </exclusions>
         </dependency>
-        <!--Vault dependency-->
+         <!--Vault dependency-->
         <dependency>
-            <groupId>net.milkbowl.vault</groupId>
-            <artifactId>VaultAPI</artifactId>
-            <version>1.7</version>
-            <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.bukkit</groupId>
-                    <artifactId>bukkit</artifactId>
-                </exclusion>
-            </exclusions>
+                <groupId>net.milkbowl.vault</groupId>
+                <artifactId>VaultAPI</artifactId>
+                <version>1.7</version>
+                <scope>provided</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.bukkit</groupId>
+                        <artifactId>bukkit</artifactId>
+                    </exclusion>
+                </exclusions>
         </dependency>
     </dependencies>
 
