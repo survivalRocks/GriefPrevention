@@ -548,6 +548,8 @@ class PlayerEventHandler implements Listener
 	    aliases.add("minecraft:" + commandName);
 	    for(Plugin plugin : Bukkit.getServer().getPluginManager().getPlugins())
         {
+            if (!(plugin instanceof JavaPlugin))
+                continue;
             JavaPlugin javaPlugin = (JavaPlugin)plugin;
             Command command = javaPlugin.getCommand(commandName);
             if(command != null)
@@ -1629,7 +1631,15 @@ class PlayerEventHandler implements Listener
 						clickedBlockType == Material.CHIPPED_ANVIL ||
 						clickedBlockType == Material.DAMAGED_ANVIL ||
 						clickedBlockType == Material.CAKE ||
-						clickedBlockType == Material.SWEET_BERRY_BUSH)))
+						clickedBlockType == Material.SWEET_BERRY_BUSH ||
+						clickedBlockType == Material.BEE_NEST ||
+						clickedBlockType == Material.BEEHIVE ||
+						clickedBlockType == Material.BEACON ||
+						clickedBlockType == Material.BELL ||
+						clickedBlockType == Material.STONECUTTER ||
+						clickedBlockType == Material.GRINDSTONE ||
+						clickedBlockType == Material.CARTOGRAPHY_TABLE ||
+						clickedBlockType == Material.LOOM)))
 		{			
                         if(playerData == null) playerData = this.dataStore.getPlayerData(player.getUniqueId());
 		    
