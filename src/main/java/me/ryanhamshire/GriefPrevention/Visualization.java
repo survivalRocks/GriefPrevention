@@ -149,33 +149,32 @@ public class Visualization
 		
 		if(visualizationType == VisualizationType.Claim)
 		{
-			cornerBlockData = Material.GLOWSTONE.createBlockData();
-			accentBlockData = Material.GOLD_BLOCK.createBlockData();
+			cornerBlockData = Material.SEA_LANTERN.createBlockData();
+			accentBlockData = Material.RED_CONCRETE.createBlockData();
 		}
 		
 		else if(visualizationType == VisualizationType.AdminClaim)
 		{
-			cornerBlockData = Material.GLOWSTONE.createBlockData();
-			accentBlockData = Material.PUMPKIN.createBlockData();
-}
+			cornerBlockData = Material.SEA_LANTERN.createBlockData();
+			accentBlockData = Material.MAGENTA_CONCRETE.createBlockData();
+		}
 		
 		else if(visualizationType == VisualizationType.Subdivision)
 		{
-			cornerBlockData = Material.IRON_BLOCK.createBlockData();
-			accentBlockData = Material.WHITE_WOOL.createBlockData();
+			cornerBlockData = Material.SEA_LANTERN.createBlockData();
+			accentBlockData = Material.CYAN_CONCRETE.createBlockData();
 		}
 		
 		else if(visualizationType == VisualizationType.RestoreNature)
 		{
-			cornerBlockData = Material.DIAMOND_BLOCK.createBlockData();
-			accentBlockData = Material.DIAMOND_BLOCK.createBlockData();
+			cornerBlockData = Material.YELLOW_CONCRETE.createBlockData();
+			accentBlockData = Material.YELLOW_CONCRETE.createBlockData();
 		}
 		
 		else
 		{
-			cornerBlockData = Material.REDSTONE_ORE.createBlockData();
-			((Lightable) cornerBlockData).setLit(true);
-			accentBlockData = Material.NETHERRACK.createBlockData();
+			cornerBlockData = Material.SEA_LANTERN.createBlockData();
+			accentBlockData = Material.ORANGE_CONCRETE.createBlockData();
 		}
 		
 		//initialize visualization elements without Y values and real data
@@ -187,46 +186,46 @@ public class Visualization
 		int maxx = locality.getBlockX() + 75;
 		int maxz = locality.getBlockZ() + 75;
 		
-		final int STEP = 10;
+		final int STEP = 2;
 		
 		//top line		
 		newElements.add(new VisualizationElement(new Location(world, smallx, 0, bigz), cornerBlockData, Material.AIR.createBlockData()));
-		newElements.add(new VisualizationElement(new Location(world, smallx + 1, 0, bigz), accentBlockData, Material.AIR.createBlockData()));
+		newElements.add(new VisualizationElement(new Location(world, smallx + 1, 0, bigz), cornerBlockData, Material.AIR.createBlockData()));
 		for(int x = smallx + STEP; x < bigx - STEP / 2; x += STEP)
 		{
 			if(x > minx && x < maxx)
 			    newElements.add(new VisualizationElement(new Location(world, x, 0, bigz), accentBlockData, Material.AIR.createBlockData()));
 		}
-		newElements.add(new VisualizationElement(new Location(world, bigx - 1, 0, bigz), accentBlockData, Material.AIR.createBlockData()));
+		newElements.add(new VisualizationElement(new Location(world, bigx - 1, 0, bigz), cornerBlockData, Material.AIR.createBlockData()));
 		
 		//bottom line
-		newElements.add(new VisualizationElement(new Location(world, smallx + 1, 0, smallz), accentBlockData, Material.AIR.createBlockData()));
+		newElements.add(new VisualizationElement(new Location(world, smallx + 1, 0, smallz), cornerBlockData, Material.AIR.createBlockData()));
 		for(int x = smallx + STEP; x < bigx - STEP / 2; x += STEP)
 		{
 			if(x > minx && x < maxx)
 			    newElements.add(new VisualizationElement(new Location(world, x, 0, smallz), accentBlockData, Material.AIR.createBlockData()));
 		}
-		newElements.add(new VisualizationElement(new Location(world, bigx - 1, 0, smallz), accentBlockData, Material.AIR.createBlockData()));
+		newElements.add(new VisualizationElement(new Location(world, bigx - 1, 0, smallz), cornerBlockData, Material.AIR.createBlockData()));
 		
 		//left line
 		newElements.add(new VisualizationElement(new Location(world, smallx, 0, smallz), cornerBlockData, Material.AIR.createBlockData()));
-		newElements.add(new VisualizationElement(new Location(world, smallx, 0, smallz + 1), accentBlockData, Material.AIR.createBlockData()));
+		newElements.add(new VisualizationElement(new Location(world, smallx, 0, smallz + 1), cornerBlockData, Material.AIR.createBlockData()));
 		for(int z = smallz + STEP; z < bigz - STEP / 2; z += STEP)
 		{
 			if(z > minz && z < maxz)
 			    newElements.add(new VisualizationElement(new Location(world, smallx, 0, z), accentBlockData, Material.AIR.createBlockData()));
 		}
-		newElements.add(new VisualizationElement(new Location(world, smallx, 0, bigz - 1), accentBlockData, Material.AIR.createBlockData()));
+		newElements.add(new VisualizationElement(new Location(world, smallx, 0, bigz - 1), cornerBlockData, Material.AIR.createBlockData()));
         
 		//right line
 		newElements.add(new VisualizationElement(new Location(world, bigx, 0, smallz), cornerBlockData, Material.AIR.createBlockData()));
-		newElements.add(new VisualizationElement(new Location(world, bigx, 0, smallz + 1), accentBlockData, Material.AIR.createBlockData()));
+		newElements.add(new VisualizationElement(new Location(world, bigx, 0, smallz + 1), cornerBlockData, Material.AIR.createBlockData()));
 		for(int z = smallz + STEP; z < bigz - STEP / 2; z += STEP)
 		{
 			if(z > minz && z < maxz)
 			    newElements.add(new VisualizationElement(new Location(world, bigx, 0, z), accentBlockData, Material.AIR.createBlockData()));
 		}
-		newElements.add(new VisualizationElement(new Location(world, bigx, 0, bigz - 1), accentBlockData, Material.AIR.createBlockData()));
+		newElements.add(new VisualizationElement(new Location(world, bigx, 0, bigz - 1), cornerBlockData, Material.AIR.createBlockData()));
 		newElements.add(new VisualizationElement(new Location(world, bigx, 0, bigz), cornerBlockData, Material.AIR.createBlockData()));
         
 		//remove any out of range elements
