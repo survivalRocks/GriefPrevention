@@ -18,7 +18,7 @@
  
 package me.ryanhamshire.GriefPrevention;
 
-import org.bukkit.ChatColor;
+import net.md_5.bungee.api.ChatColor;
 import org.bukkit.entity.Player;
 
 //sends a message to a player

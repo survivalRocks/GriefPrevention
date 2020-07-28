@@ -37,13 +37,13 @@ import me.ryanhamshire.GriefPrevention.events.PreventBlockBreakEvent;
 import me.ryanhamshire.GriefPrevention.events.SaveTrappedPlayerEvent;
 import me.ryanhamshire.GriefPrevention.events.TrustChangedEvent;
 import me.ryanhamshire.GriefPrevention.metrics.MetricsHandler;
+import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.milkbowl.vault.economy.Economy;
 
 import org.bukkit.BanList;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
 import org.bukkit.ChunkSnapshot;
 import org.bukkit.GameMode;
@@ -3400,7 +3400,13 @@ public class GriefPrevention extends JavaPlugin
 		}
 		else
 		{
-			if (actionbar) player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(color + message));
+			if (actionbar)
+			{
+				TextComponent component = new TextComponent(message);
+				component.setColor(color);
+				component.setUnderlined(true);
+				player.spigot().sendMessage(ChatMessageType.ACTION_BAR, component);
+			}
 			else player.sendMessage(color + message);
 		}
 	}

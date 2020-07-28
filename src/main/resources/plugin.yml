@@ -127,11 +127,11 @@ commands:
       usage: /BuyClaimBlocks <numberOfBlocks>
       aliases: buyclaim
       permission: griefprevention.buysellclaimblocks
-    sellclaimblocks:
-      description: Sells your claim blocks for server money.  Doesn't work on servers without a Vault-compatible economy plugin.
-      usage: /SellClaimBlocks <numberOfBlocks>
-      aliases: sellclaim
-      permission: griefprevention.buysellclaimblocks
+#    sellclaimblocks:
+#      description: Sells your claim blocks for server money.  Doesn't work on servers without a Vault-compatible economy plugin.
+#      usage: /SellClaimBlocks <numberOfBlocks>
+#      aliases: sellclaim
+#      permission: griefprevention.buysellclaimblocks
     trapped:
       description: Ejects you to nearby unclaimed land.  Has a substantial cooldown period.
       usage: /Trapped
@@ -140,10 +140,10 @@ commands:
       description: Lists permissions for the claim you're standing in.
       usage: /TrustList
       permission: griefprevention.claims
-    siege:
-      description: Initiates a siege versus another player.
-      usage: /Siege <playerName>
-      permission: griefprevention.siege
+#    siege:
+#      description: Initiates a siege versus another player.
+#      usage: /Siege <playerName>
+#      permission: griefprevention.siege
     ignoreclaims:
       description: Toggles ignore claims mode.
       usage: /IgnoreClaims
@@ -176,10 +176,10 @@ commands:
       usage: /ClaimExplosions
       permission: griefprevention.claims
       aliases: claimexplosion
-    softmute:
-      description: Toggles whether a player's messages will only reach other soft-muted players.
-      usage: /SoftMute <player>
-      permission: griefprevention.softmute
+#    softmute:
+#      description: Toggles whether a player's messages will only reach other soft-muted players.
+#      usage: /SoftMute <player>
+#      permission: griefprevention.softmute
     gpreload:
       description: Reloads Grief Prevention's configuration settings.  Does NOT totally reload the entire plugin.
       usage: /gpreload
@@ -192,29 +192,29 @@ commands:
       description: Allows an administrator to get technical information about blocks in the world and items in hand.
       usage: /GPBlockInfo
       permission: griefprevention.gpblockinfo
-    ignoreplayer:
-      description: Ignores another player's chat messages.
-      usage: /IgnorePlayer <player name>
-      aliases: [ignore]
-      permission: griefprevention.ignore
-    unignoreplayer:
-      description: Unignores another player's chat messages.
-      usage: /UnIgnorePlayer <player name>
-      aliases: [unignore]
-      permission: griefprevention.ignore
-    ignoredplayerlist:
-      description: Lists the players you're ignoring in chat.
-      usage: /IgnoredPlayerList
-      aliases: [ignores, ignored, ignorelist, ignoredlist, listignores, listignored, ignoring]
-      permission: griefprevention.ignore
-    separate:
-      description: Forces two players to ignore each other in chat.
-      usage: /Separate <player1> <player2>
-      permission: griefprevention.separate
-    unseparate:
-      description: Reverses /separate.
-      usage: /UnSeparate <player1> <player2>
-      permission: griefprevention.separate
+#    ignoreplayer:
+#      description: Ignores another player's chat messages.
+#      usage: /IgnorePlayer <player name>
+#      aliases: [ignore]
+#      permission: griefprevention.ignore
+#    unignoreplayer:
+#      description: Unignores another player's chat messages.
+#      usage: /UnIgnorePlayer <player name>
+#      aliases: [unignore]
+#      permission: griefprevention.ignore
+#    ignoredplayerlist:
+#      description: Lists the players you're ignoring in chat.
+#      usage: /IgnoredPlayerList
+#      aliases: [ignores, ignored, ignorelist, ignoredlist, listignores, listignored, ignoring]
+#      permission: griefprevention.ignore
+#    separate:
+#      description: Forces two players to ignore each other in chat.
+#      usage: /Separate <player1> <player2>
+#      permission: griefprevention.separate
+#    unseparate:
+#      description: Reverses /separate.
+#      usage: /UnSeparate <player1> <player2>
+#      permission: griefprevention.separate
     claimbook:
       description: Gives a player a manual about claiming land.
       usage: /ClaimBook <player>
@@ -236,7 +236,7 @@ permissions:
             griefprevention.lava: true
             griefprevention.eavesdrop: true
             griefprevention.deathblow: true
-            griefprevention.softmute: true
+#            griefprevention.softmute: true
             griefprevention.reload: true
             griefprevention.visualizenearbyclaims: true
             griefprevention.overrideclaimcountlimit: true

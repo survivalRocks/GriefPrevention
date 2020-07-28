@@ -18,14 +18,15 @@
 
 package me.ryanhamshire.GriefPrevention;
 
-import org.bukkit.ChatColor;
+import me.justeli.api.wide.Text;
+import net.md_5.bungee.api.ChatColor;
 
 //just a few constants for chat color codes
 public class TextMode 
 {	
 	final static ChatColor Info = ChatColor.AQUA;
 	final static ChatColor Instr = ChatColor.YELLOW;
-	final static ChatColor Warn = ChatColor.GOLD;
-	final static ChatColor Err = ChatColor.RED;
-	final static ChatColor Success = ChatColor.GREEN;
+	final static ChatColor Warn = Text.TextColor.ERROR.getColor();
+	final static ChatColor Err = Text.TextColor.RESTRICTED.getColor();
+	final static ChatColor Success = Text.TextColor.ENABLED.getColor();
 }

@@ -20,7 +20,7 @@ package me.ryanhamshire.GriefPrevention;
 import me.ryanhamshire.GriefPrevention.events.VisualizationEvent;
 import org.bukkit.BanList;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
+import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Chunk;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
