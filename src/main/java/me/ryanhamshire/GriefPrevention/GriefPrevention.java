@@ -3419,7 +3419,7 @@ public class GriefPrevention extends JavaPlugin
 
     public static void sendMessage(Player player, ChatColor color, String message, long delayInTicks)
     {
-        SendPlayerMessageTask task = new SendPlayerMessageTask(player, color, message);
+        SendPlayerMessageTask task = new SendPlayerMessageTask(player, color, message, false);
 
         //Only schedule if there should be a delay. Otherwise, send the message right now, else the message will appear out of order.
         if (delayInTicks > 0)
