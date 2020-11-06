@@ -29,11 +29,10 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -59,10 +58,10 @@ public class Claim
     public UUID ownerID;
 
     //list of players who (beyond the claim owner) have permission to grant permissions in this claim
-    public ArrayList<String> managers = new ArrayList<String>();
+    public ArrayList<String> managers = new ArrayList<>();
 
     //permissions for this claim, see ClaimPermission class
-    private HashMap<String, ClaimPermission> playerIDToClaimPermissionMap = new HashMap<String, ClaimPermission>();
+    private HashMap<String, ClaimPermission> playerIDToClaimPermissionMap = new HashMap<>();
 
     //whether or not this claim is in the data store
     //if a claim instance isn't in the data store, it isn't "active" - players can't interract with it
@@ -81,7 +80,7 @@ public class Claim
 
     //children (subdivisions)
     //note subdivisions themselves never have children
-    public ArrayList<Claim> children = new ArrayList<Claim>();
+    public ArrayList<Claim> children = new ArrayList<>();
 
     //information about a siege involving this claim.  null means no siege is impacting this claim
     public SiegeData siegeData = null;
@@ -250,6 +249,24 @@ public class Claim
         this(lesserBoundaryCorner, greaterBoundaryCorner, ownerID, builderIDs, containerIDs, accessorIDs, managerIDs, false, id);
     }
 
+    //produces a copy of a claim.
+    public Claim(Claim claim) {
+        this.modifiedDate = claim.modifiedDate;
+        this.lesserBoundaryCorner = claim.greaterBoundaryCorner.clone();
+        this.greaterBoundaryCorner = claim.greaterBoundaryCorner.clone();
+        this.id = claim.id;
+        this.ownerID = claim.ownerID;
+        this.managers = new ArrayList<>(claim.managers);
+        this.playerIDToClaimPermissionMap = new HashMap<>(claim.playerIDToClaimPermissionMap);
+        this.inDataStore = false; //since it's a copy of a claim, not in datastore!
+        this.areExplosivesAllowed = claim.areExplosivesAllowed;
+        this.parent = claim.parent;
+        this.inheritNothing = claim.inheritNothing;
+        this.children = new ArrayList<>(claim.children);
+        this.siegeData = claim.siegeData;
+        this.doorsOpen = claim.doorsOpen;
+    }
+
     //measurements.  all measurements are in blocks
     public int getArea()
     {
@@ -285,7 +302,7 @@ public class Claim
         Claim claim = new Claim
                 (new Location(this.lesserBoundaryCorner.getWorld(), this.lesserBoundaryCorner.getBlockX() - howNear, this.lesserBoundaryCorner.getBlockY(), this.lesserBoundaryCorner.getBlockZ() - howNear),
                         new Location(this.greaterBoundaryCorner.getWorld(), this.greaterBoundaryCorner.getBlockX() + howNear, this.greaterBoundaryCorner.getBlockY(), this.greaterBoundaryCorner.getBlockZ() + howNear),
-                        null, new ArrayList<String>(), new ArrayList<String>(), new ArrayList<String>(), new ArrayList<String>(), null);
+                        null, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), null);
 
         return claim.contains(location, false, true);
     }
@@ -336,7 +353,7 @@ public class Claim
         return GriefPrevention.instance.dataStore.getMessage(Messages.OnlyOwnersModifyClaims, this.getOwnerName());
     }
 
-    private List<Material> placeableFarmingBlocksList = Arrays.asList(
+    private static final EnumSet<Material> PLACEABLE_FARMING_BLOCKS = EnumSet.of(
             Material.PUMPKIN_STEM,
             Material.WHEAT,
             Material.MELON_STEM,
@@ -345,9 +362,9 @@ public class Claim
             Material.NETHER_WART,
             Material.BEETROOTS);
 
-    private boolean placeableForFarming(Material material)
+    private static boolean placeableForFarming(Material material)
     {
-        return this.placeableFarmingBlocksList.contains(material);
+        return PLACEABLE_FARMING_BLOCKS.contains(material);
     }
 
     //build permission check
@@ -392,7 +409,7 @@ public class Claim
         if (this.allowContainers(player) == null)
         {
             //do allow for farming, if player has /containertrust permission
-            if (this.placeableForFarming(material))
+            if (placeableForFarming(material))
             {
                 return null;
             }
@@ -569,15 +586,15 @@ public class Claim
         if (this.allowEdit(player) == null) return null;
 
         //anyone who's in the managers (/PermissionTrust) list can do this
-        for (int i = 0; i < this.managers.size(); i++)
+        for (String managerID : this.managers)
         {
-            String managerID = this.managers.get(i);
+            if (managerID == null) continue;
             if (player.getUniqueId().toString().equals(managerID)) return null;
 
             else if (managerID.startsWith("[") && managerID.endsWith("]"))
             {
                 managerID = managerID.substring(1, managerID.length() - 1);
-                if (managerID == null || managerID.isEmpty()) continue;
+                if (managerID.isEmpty()) continue;
                 if (player.hasPermission(managerID)) return null;
             }
         }
@@ -644,11 +661,8 @@ public class Claim
     public void getPermissions(ArrayList<String> builders, ArrayList<String> containers, ArrayList<String> accessors, ArrayList<String> managers)
     {
         //loop through all the entries in the hash map
-        Iterator<Map.Entry<String, ClaimPermission>> mappingsIterator = this.playerIDToClaimPermissionMap.entrySet().iterator();
-        while (mappingsIterator.hasNext())
+        for (Map.Entry<String, ClaimPermission> entry : this.playerIDToClaimPermissionMap.entrySet())
         {
-            Map.Entry<String, ClaimPermission> entry = mappingsIterator.next();
-
             //build up a list for each permission level
             if (entry.getValue() == ClaimPermission.Build)
             {
@@ -665,10 +679,7 @@ public class Claim
         }
 
         //managers are handled a little differently
-        for (int i = 0; i < this.managers.size(); i++)
-        {
-            managers.add(this.managers.get(i));
-        }
+        managers.addAll(this.managers);
     }
 
     //returns a copy of the location representing lower x, y, z limits
@@ -730,10 +741,10 @@ public class Claim
         else if (excludeSubdivisions)
         {
             //search all subdivisions to see if the location is in any of them
-            for (int i = 0; i < this.children.size(); i++)
+            for (Claim child : this.children)
             {
                 //if we find such a subdivision, return false
-                if (this.children.get(i).contains(location, ignoreHeight, true))
+                if (child.contains(location, ignoreHeight, true))
                 {
                     return false;
                 }
@@ -748,48 +759,15 @@ public class Claim
     //used internally to prevent overlaps when creating claims
     boolean overlaps(Claim otherClaim)
     {
-        //NOTE:  if trying to understand this makes your head hurt, don't feel bad - it hurts mine too.
-        //try drawing pictures to visualize test cases.
+        // For help visualizing test cases, try https://silentmatt.com/rectangle-intersection/
 
         if (!this.lesserBoundaryCorner.getWorld().equals(otherClaim.getLesserBoundaryCorner().getWorld())) return false;
 
-        //first, check the corners of this claim aren't inside any existing claims
-        if (otherClaim.contains(this.lesserBoundaryCorner, true, false)) return true;
-        if (otherClaim.contains(this.greaterBoundaryCorner, true, false)) return true;
-        if (otherClaim.contains(new Location(this.lesserBoundaryCorner.getWorld(), this.lesserBoundaryCorner.getBlockX(), 0, this.greaterBoundaryCorner.getBlockZ()), true, false))
-            return true;
-        if (otherClaim.contains(new Location(this.lesserBoundaryCorner.getWorld(), this.greaterBoundaryCorner.getBlockX(), 0, this.lesserBoundaryCorner.getBlockZ()), true, false))
-            return true;
+        return !(this.getGreaterBoundaryCorner().getX() < otherClaim.getLesserBoundaryCorner().getX() ||
+                this.getLesserBoundaryCorner().getX() > otherClaim.getGreaterBoundaryCorner().getX() ||
+                this.getGreaterBoundaryCorner().getZ() < otherClaim.getLesserBoundaryCorner().getZ() ||
+                this.getLesserBoundaryCorner().getZ() > otherClaim.getGreaterBoundaryCorner().getZ());
 
-        //verify that no claim's lesser boundary point is inside this new claim, to cover the "existing claim is entirely inside new claim" case
-        if (this.contains(otherClaim.getLesserBoundaryCorner(), true, false)) return true;
-
-        //verify this claim doesn't band across an existing claim, either horizontally or vertically
-        if (this.getLesserBoundaryCorner().getBlockZ() <= otherClaim.getGreaterBoundaryCorner().getBlockZ() &&
-                this.getLesserBoundaryCorner().getBlockZ() >= otherClaim.getLesserBoundaryCorner().getBlockZ() &&
-                this.getLesserBoundaryCorner().getBlockX() < otherClaim.getLesserBoundaryCorner().getBlockX() &&
-                this.getGreaterBoundaryCorner().getBlockX() > otherClaim.getGreaterBoundaryCorner().getBlockX())
-            return true;
-
-        if (this.getGreaterBoundaryCorner().getBlockZ() <= otherClaim.getGreaterBoundaryCorner().getBlockZ() &&
-                this.getGreaterBoundaryCorner().getBlockZ() >= otherClaim.getLesserBoundaryCorner().getBlockZ() &&
-                this.getLesserBoundaryCorner().getBlockX() < otherClaim.getLesserBoundaryCorner().getBlockX() &&
-                this.getGreaterBoundaryCorner().getBlockX() > otherClaim.getGreaterBoundaryCorner().getBlockX())
-            return true;
-
-        if (this.getLesserBoundaryCorner().getBlockX() <= otherClaim.getGreaterBoundaryCorner().getBlockX() &&
-                this.getLesserBoundaryCorner().getBlockX() >= otherClaim.getLesserBoundaryCorner().getBlockX() &&
-                this.getLesserBoundaryCorner().getBlockZ() < otherClaim.getLesserBoundaryCorner().getBlockZ() &&
-                this.getGreaterBoundaryCorner().getBlockZ() > otherClaim.getGreaterBoundaryCorner().getBlockZ())
-            return true;
-
-        if (this.getGreaterBoundaryCorner().getBlockX() <= otherClaim.getGreaterBoundaryCorner().getBlockX() &&
-                this.getGreaterBoundaryCorner().getBlockX() >= otherClaim.getLesserBoundaryCorner().getBlockX() &&
-                this.getLesserBoundaryCorner().getBlockZ() < otherClaim.getLesserBoundaryCorner().getBlockZ() &&
-                this.getGreaterBoundaryCorner().getBlockZ() > otherClaim.getGreaterBoundaryCorner().getBlockZ())
-            return true;
-
-        return false;
     }
 
     //whether more entities may be added to a claim
@@ -816,9 +794,8 @@ public class Claim
         for (Chunk chunk : chunks)
         {
             Entity[] entities = chunk.getEntities();
-            for (int i = 0; i < entities.length; i++)
+            for (Entity entity : entities)
             {
-                Entity entity = entities[i];
                 if (!(entity instanceof Player) && this.contains(entity.getLocation(), false, false))
                 {
                     totalEntities++;
@@ -848,9 +825,8 @@ public class Claim
         for (Chunk chunk : chunks)
         {
             BlockState[] actives = chunk.getTileEntities();
-            for (int i = 0; i < actives.length; i++)
+            for (BlockState active : actives)
             {
-                BlockState active = actives[i];
                 if (BlockEventHandler.isActiveBlock(active))
                 {
                     if (this.contains(active.getLocation(), false, false))
@@ -944,7 +920,7 @@ public class Claim
 
     public ArrayList<Chunk> getChunks()
     {
-        ArrayList<Chunk> chunks = new ArrayList<Chunk>();
+        ArrayList<Chunk> chunks = new ArrayList<>();
 
         World world = this.getLesserBoundaryCorner().getWorld();
         Chunk lesserChunk = this.getLesserBoundaryCorner().getChunk();
@@ -963,20 +939,6 @@ public class Claim
 
     ArrayList<Long> getChunkHashes()
     {
-        ArrayList<Long> hashes = new ArrayList<Long>();
-        int smallX = this.getLesserBoundaryCorner().getBlockX() >> 4;
-        int smallZ = this.getLesserBoundaryCorner().getBlockZ() >> 4;
-        int largeX = this.getGreaterBoundaryCorner().getBlockX() >> 4;
-        int largeZ = this.getGreaterBoundaryCorner().getBlockZ() >> 4;
-
-        for (int x = smallX; x <= largeX; x++)
-        {
-            for (int z = smallZ; z <= largeZ; z++)
-            {
-                hashes.add(DataStore.getChunkHash(x, z));
-            }
-        }
-
-        return hashes;
+        return DataStore.getChunkHashes(this);
     }
 }

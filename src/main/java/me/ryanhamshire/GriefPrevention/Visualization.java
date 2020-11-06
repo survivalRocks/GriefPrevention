@@ -27,6 +27,8 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Lightable;
 import org.bukkit.entity.Player;
+import org.bukkit.util.BoundingBox;
+import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
 
@@ -35,7 +37,7 @@ import java.util.ArrayList;
 //the result is that those players see new blocks, but the world hasn't been changed.  other players can't see the new blocks, either.
 public class Visualization
 {
-    public ArrayList<VisualizationElement> elements = new ArrayList<VisualizationElement>();
+    public ArrayList<VisualizationElement> elements = new ArrayList<>();
 
     //sends a visualization to a player
     public static void Apply(Player player, Visualization visualization)
@@ -130,52 +132,52 @@ public class Visualization
     //handy for combining several visualizations together, as when visualization a top level claim with several subdivisions inside
     //locality is a performance consideration.  only create visualization blocks for around 100 blocks of the locality
 
-    private void addClaimElements(Claim claim, int height, VisualizationType visualizationType, Location locality)
+    public void addClaimElements(Claim claim, int height, VisualizationType visualizationType, Location locality)
     {
-        Location smallXsmallZ = claim.getLesserBoundaryCorner();
-        Location bigXbigZ = claim.getGreaterBoundaryCorner();
-        World world = smallXsmallZ.getWorld();
-        boolean waterIsTransparent = locality.getBlock().getType() == Material.WATER;
-
-        int smallx = smallXsmallZ.getBlockX();
-        int smallz = smallXsmallZ.getBlockZ();
-        int bigx = bigXbigZ.getBlockX();
-        int bigz = bigXbigZ.getBlockZ();
-
         BlockData cornerBlockData;
         BlockData accentBlockData;
 
-        ArrayList<VisualizationElement> newElements = new ArrayList<VisualizationElement>();
+        if (visualizationType == VisualizationType.Claim)
+        {
+            cornerBlockData = Material.SHROOMLIGHT.createBlockData();
+            accentBlockData = Material.RED_CONCRETE.createBlockData();
+        }
+        else if (visualizationType == VisualizationType.AdminClaim)
+        {
+            cornerBlockData = Material.SHROOMLIGHT.createBlockData();
+            accentBlockData = Material.ORANGE_CONCRETE.createBlockData();
+        }
+        else if (visualizationType == VisualizationType.Subdivision)
+        {
+            cornerBlockData = Material.SEA_LANTERN.createBlockData();
+            accentBlockData = Material.WHITE_WOOL.createBlockData();
+        }
+        else if (visualizationType == VisualizationType.RestoreNature)
+        {
+            cornerBlockData = Material.DIAMOND_BLOCK.createBlockData();
+            accentBlockData = Material.DIAMOND_BLOCK.createBlockData();
+        }
+        else
+        {
+            cornerBlockData = Material.SEA_LANTERN.createBlockData();
+            ((Lightable) cornerBlockData).setLit(true);
+            accentBlockData = Material.MAGENTA_CONCRETE.createBlockData();
+        }
 
-	    if(visualizationType == VisualizationType.Claim)
-	    {
-		    cornerBlockData = Material.SEA_LANTERN.createBlockData();
-		    accentBlockData = Material.RED_CONCRETE.createBlockData();
-	    }
+        addClaimElements(claim.getLesserBoundaryCorner(), claim.getGreaterBoundaryCorner(), locality, height, cornerBlockData, accentBlockData, 10);
+    }
 
-	    else if(visualizationType == VisualizationType.AdminClaim)
-	    {
-		    cornerBlockData = Material.SEA_LANTERN.createBlockData();
-		    accentBlockData = Material.MAGENTA_CONCRETE.createBlockData();
-	    }
+    //adds a general claim cuboid (represented by min and max) visualization to the current visualization
+    public void addClaimElements(Location min, Location max, Location locality, int height, BlockData cornerBlockData, BlockData accentBlockData, int STEP) {
+        World world = min.getWorld();
+        boolean waterIsTransparent = locality.getBlock().getType() == Material.WATER;
 
-	    else if(visualizationType == VisualizationType.Subdivision)
-	    {
-		    cornerBlockData = Material.SEA_LANTERN.createBlockData();
-		    accentBlockData = Material.CYAN_CONCRETE.createBlockData();
-	    }
+        int smallx = min.getBlockX();
+        int smallz = min.getBlockZ();
+        int bigx = max.getBlockX();
+        int bigz = max.getBlockZ();
 
-	    else if(visualizationType == VisualizationType.RestoreNature)
-	    {
-		    cornerBlockData = Material.YELLOW_CONCRETE.createBlockData();
-		    accentBlockData = Material.YELLOW_CONCRETE.createBlockData();
-	    }
-
-	    else
-	    {
-		    cornerBlockData = Material.SEA_LANTERN.createBlockData();
-		    accentBlockData = Material.ORANGE_CONCRETE.createBlockData();
-	    }
+        ArrayList<VisualizationElement> newElements = new ArrayList<>();
 
         //initialize visualization elements without Y values and real data
         //that will be added later for only the visualization elements within visualization range
@@ -185,8 +187,6 @@ public class Visualization
         int minz = locality.getBlockZ() - 75;
         int maxx = locality.getBlockX() + 75;
         int maxz = locality.getBlockZ() + 75;
-
-        final int STEP = 2;
 
         //top line
         newElements.add(new VisualizationElement(new Location(world, smallx, 0, bigz), cornerBlockData, Material.AIR.createBlockData()));
@@ -232,10 +232,11 @@ public class Visualization
         this.removeElementsOutOfRange(newElements, minx, minz, maxx, maxz);
 
         //remove any elements outside the claim
+        BoundingBox box = BoundingBox.of(min, max);
         for (int i = 0; i < newElements.size(); i++)
         {
             VisualizationElement element = newElements.get(i);
-            if (!claim.contains(element.location, true, false))
+            if (!containsIncludingIgnoringHeight(box, element.location.toVector()))
             {
                 newElements.remove(i--);
             }
@@ -251,6 +252,13 @@ public class Visualization
         }
 
         this.elements.addAll(newElements);
+    }
+
+    private boolean containsIncludingIgnoringHeight(BoundingBox box, Vector vector) {
+        return vector.getBlockX() >= box.getMinX()
+                && vector.getBlockX() <= box.getMaxX()
+                && vector.getBlockZ() >= box.getMinZ()
+                && vector.getBlockZ() <= box.getMaxZ();
     }
 
     //removes any elements which are out of visualization range

@@ -18,6 +18,7 @@
 
 package me.ryanhamshire.GriefPrevention;
 
+import me.ryanhamshire.GriefPrevention.events.ClaimInspectionEvent;
 import me.ryanhamshire.GriefPrevention.events.VisualizationEvent;
 import org.bukkit.BanList;
 import org.bukkit.Bukkit;
@@ -35,7 +36,6 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Levelled;
 import org.bukkit.block.data.Waterlogged;
-import org.bukkit.block.data.type.Gate;
 import org.bukkit.command.Command;
 import org.bukkit.entity.AbstractHorse;
 import org.bukkit.entity.Animals;
@@ -107,23 +107,23 @@ import java.util.regex.Pattern;
 
 class PlayerEventHandler implements Listener
 {
-    private DataStore dataStore;
-    private GriefPrevention instance;
+    private final DataStore dataStore;
+    private final GriefPrevention instance;
 
     //list of temporarily banned ip's
-    private ArrayList<IpBanInfo> tempBannedIps = new ArrayList<IpBanInfo>();
+    private final ArrayList<IpBanInfo> tempBannedIps = new ArrayList<>();
 
     //number of milliseconds in a day
     private final long MILLISECONDS_IN_DAY = 1000 * 60 * 60 * 24;
 
     //timestamps of login and logout notifications in the last minute
-    private ArrayList<Long> recentLoginLogoutNotifications = new ArrayList<Long>();
+    private final ArrayList<Long> recentLoginLogoutNotifications = new ArrayList<>();
 
     //regex pattern for the "how do i claim land?" scanner
     private Pattern howToClaimPattern = null;
 
     //matcher for banned words
-    private WordFinder bannedWordFinder;
+    private final WordFinder bannedWordFinder;
 
     //spam tracker
     SpamDetector spamDetector = new SpamDetector();
@@ -163,7 +163,7 @@ class PlayerEventHandler implements Listener
         else if (this.dataStore.isSoftMuted(player.getUniqueId()))
         {
             String notificationMessage = "(Muted " + player.getName() + "): " + message;
-            Set<Player> recipientsToKeep = new HashSet<Player>();
+            Set<Player> recipientsToKeep = new HashSet<>();
             for (Player recipient : recipients)
             {
                 if (this.dataStore.isSoftMuted(recipient.getUniqueId()))
@@ -229,7 +229,7 @@ class PlayerEventHandler implements Listener
             //based on ignore lists, remove some of the audience
             if (!player.hasPermission("griefprevention.notignorable"))
             {
-                Set<Player> recipientsToRemove = new HashSet<Player>();
+                Set<Player> recipientsToRemove = new HashSet<>();
                 PlayerData playerData = this.dataStore.getPlayerData(player.getUniqueId());
                 for (Player recipient : recipients)
                 {
@@ -502,7 +502,7 @@ class PlayerEventHandler implements Listener
                 StringBuilder builder = new StringBuilder();
                 for (String arg : args)
                 {
-                    builder.append(arg + " ");
+                    builder.append(arg).append(' ');
                 }
 
                 makeSocialLogEntry(event.getPlayer().getName(), builder.toString());
@@ -537,7 +537,7 @@ class PlayerEventHandler implements Listener
         }
     }
 
-    private ConcurrentHashMap<String, CommandCategory> commandCategoryMap = new ConcurrentHashMap<String, CommandCategory>();
+    private final ConcurrentHashMap<String, CommandCategory> commandCategoryMap = new ConcurrentHashMap<>();
 
     private CommandCategory getCommandCategory(String commandName)
     {
@@ -548,7 +548,7 @@ class PlayerEventHandler implements Listener
         if (category != null) return category;
 
         //otherwise build a list of all the aliases of this command across all installed plugins
-        HashSet<String> aliases = new HashSet<String>();
+        HashSet<String> aliases = new HashSet<>();
         aliases.add(commandName);
         aliases.add("minecraft:" + commandName);
         for (Plugin plugin : Bukkit.getServer().getPluginManager().getPlugins())
@@ -611,14 +611,14 @@ class PlayerEventHandler implements Listener
         {
             entryBuilder.append(' ');
         }
-        entryBuilder.append(": " + message);
+        entryBuilder.append(": ").append(message);
 
         longestNameLength = Math.max(longestNameLength, name.length());
         //TODO: cleanup static
         GriefPrevention.AddLogEntry(entryBuilder.toString(), CustomLogEntryTypes.SocialActivity, true);
     }
 
-    private ConcurrentHashMap<UUID, Date> lastLoginThisServerSessionMap = new ConcurrentHashMap<UUID, Date>();
+    private final ConcurrentHashMap<UUID, Date> lastLoginThisServerSessionMap = new ConcurrentHashMap<>();
 
     //when a player attempts to join the server...
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -875,7 +875,7 @@ class PlayerEventHandler implements Listener
     }
 
     //when a player dies...
-    private HashMap<UUID, Long> deathTimestamps = new HashMap<UUID, Long>();
+    private final HashMap<UUID, Long> deathTimestamps = new HashMap<>();
 
     @EventHandler(priority = EventPriority.HIGHEST)
     void onPlayerDeath(PlayerDeathEvent event)
@@ -908,7 +908,7 @@ class PlayerEventHandler implements Listener
     }
 
     //when a player quits...
-    private HashMap<UUID, Integer> heldLogoutMessages = new HashMap<UUID, Integer>();
+    private final HashMap<UUID, Integer> heldLogoutMessages = new HashMap<>();
 
     @EventHandler(priority = EventPriority.HIGHEST)
     void onPlayerQuit(PlayerQuitEvent event)
@@ -1186,33 +1186,33 @@ class PlayerEventHandler implements Listener
             {
                 if (tameable.getOwner() != null)
                 {
-                   UUID ownerID = tameable.getOwner().getUniqueId();
-                   
-                   //if the player interacting is the owner or an admin in ignore claims mode, always allow
-                   if(player.getUniqueId().equals(ownerID) || playerData.ignoreClaims)
-                   {
-                       //if giving away pet, do that instead
-                       if(playerData.petGiveawayRecipient != null)
-                       {
-                           tameable.setOwner(playerData.petGiveawayRecipient);
-                           playerData.petGiveawayRecipient = null;
-                           instance.sendMessage(player, TextMode.Success, Messages.PetGiveawayConfirmation);
-                           event.setCancelled(true);
-                       }
-                       
-                       return;
-                   }
-                   if(!instance.pvpRulesApply(entity.getLocation().getWorld()) || instance.config_pvp_protectPets)
-                   {
-                       //otherwise disallow
-                       OfflinePlayer owner = instance.getServer().getOfflinePlayer(ownerID); 
-                       String ownerName = owner.getName();
-                       if(ownerName == null) ownerName = "someone";
-                       String message = instance.dataStore.getMessage(Messages.NotYourPet, ownerName);
-                       instance.sendMessage(player, TextMode.Err, message, true);
-                       event.setCancelled(true);
-                       return;
-                   }
+                    UUID ownerID = tameable.getOwner().getUniqueId();
+
+                    //if the player interacting is the owner or an admin in ignore claims mode, always allow
+                    if (player.getUniqueId().equals(ownerID) || playerData.ignoreClaims)
+                    {
+                        //if giving away pet, do that instead
+                        if (playerData.petGiveawayRecipient != null)
+                        {
+                            tameable.setOwner(playerData.petGiveawayRecipient);
+                            playerData.petGiveawayRecipient = null;
+                            instance.sendMessage(player, TextMode.Success, Messages.PetGiveawayConfirmation);
+                            event.setCancelled(true);
+                        }
+
+                        return;
+                    }
+                    if (!instance.pvpRulesApply(entity.getLocation().getWorld()) || instance.config_pvp_protectPets)
+                    {
+                        //otherwise disallow
+                        OfflinePlayer owner = instance.getServer().getOfflinePlayer(ownerID);
+                        String ownerName = owner.getName();
+                        if (ownerName == null) ownerName = "someone";
+                        String message = instance.dataStore.getMessage(Messages.NotYourPet, ownerName);
+                        instance.sendMessage(player, TextMode.Err, message, true);
+                        event.setCancelled(true);
+                        return;
+                    }
                 }
             }
             else  //world repair code for a now-fixed GP bug //TODO: necessary anymore?
@@ -1445,8 +1445,8 @@ class PlayerEventHandler implements Listener
     }
 
     //block use of buckets within other players' claims
-    private HashSet<Material> commonAdjacentBlocks_water = new HashSet<Material>(Arrays.asList(Material.WATER, Material.FARMLAND, Material.DIRT, Material.STONE));
-    private HashSet<Material> commonAdjacentBlocks_lava = new HashSet<Material>(Arrays.asList(Material.LAVA, Material.DIRT, Material.STONE));
+    private final HashSet<Material> commonAdjacentBlocks_water = new HashSet<>(Arrays.asList(Material.WATER, Material.FARMLAND, Material.DIRT, Material.STONE));
+    private final HashSet<Material> commonAdjacentBlocks_lava = new HashSet<>(Arrays.asList(Material.LAVA, Material.DIRT, Material.STONE));
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOWEST)
     public void onPlayerBucketEmpty(PlayerBucketEmptyEvent bucketEvent)
@@ -1494,9 +1494,8 @@ class PlayerEventHandler implements Listener
             if (bucketEvent.getBucket() == Material.LAVA_BUCKET)
             {
                 List<Player> players = block.getWorld().getPlayers();
-                for (int i = 0; i < players.size(); i++)
+                for (Player otherPlayer : players)
                 {
-                    Player otherPlayer = players.get(i);
                     Location location = otherPlayer.getLocation();
                     if (!otherPlayer.equals(player) && otherPlayer.getGameMode() == GameMode.SURVIVAL && player.canSee(otherPlayer) && block.getY() >= location.getBlockY() - 1 && location.distanceSquared(block.getLocation()) < minLavaDistance * minLavaDistance)
                     {
@@ -1732,7 +1731,7 @@ class PlayerEventHandler implements Listener
 
                 instance.config_claims_lecternReadingRequiresAccessTrust && clickedBlockType == Material.LECTERN ||
 
-                instance.config_claims_lockFenceGates && clickedBlock.getBlockData() instanceof Gate))
+                instance.config_claims_lockFenceGates && Tag.FENCE_GATES.isTagged(clickedBlockType)))
         {
             if (playerData == null) playerData = this.dataStore.getPlayerData(player.getUniqueId());
             Claim claim = this.dataStore.getClaimAt(clickedBlock.getLocation(), false, playerData.lastClaim);
@@ -1953,11 +1952,17 @@ class PlayerEventHandler implements Listener
                     //find nearby claims
                     Set<Claim> claims = this.dataStore.getNearbyClaims(player.getLocation());
 
-                    // alert plugins of a visualization
-                    Bukkit.getPluginManager().callEvent(new VisualizationEvent(player, claims));
+                    // alert plugins of a claim inspection, return if cancelled
+                    ClaimInspectionEvent inspectionEvent = new ClaimInspectionEvent(player, null, claims, true);
+                    Bukkit.getPluginManager().callEvent(inspectionEvent);
+                    if (inspectionEvent.isCancelled()) return;
 
                     //visualize boundaries
                     Visualization visualization = Visualization.fromClaims(claims, player.getEyeLocation().getBlockY(), VisualizationType.Claim, player.getLocation());
+
+                    // alert plugins of a visualization
+                    Bukkit.getPluginManager().callEvent(new VisualizationEvent(player, visualization, claims, true));
+
                     Visualization.Apply(player, visualization);
 
                     instance.sendMessage(player, TextMode.Info, Messages.ShowNearbyClaims, String.valueOf(claims.size()));
@@ -1985,7 +1990,7 @@ class PlayerEventHandler implements Listener
                     instance.sendMessage(player, TextMode.Err, Messages.TooFarAway);
 
                     // alert plugins of a visualization
-                    Bukkit.getPluginManager().callEvent(new VisualizationEvent(player, Collections.<Claim>emptySet()));
+                    Bukkit.getPluginManager().callEvent(new VisualizationEvent(player, null, Collections.<Claim>emptySet()));
 
                     Visualization.Revert(player);
                     return;
@@ -1997,10 +2002,15 @@ class PlayerEventHandler implements Listener
                 //no claim case
                 if (claim == null)
                 {
+                    // alert plugins of a claim inspection, return if cancelled
+                    ClaimInspectionEvent inspectionEvent = new ClaimInspectionEvent(player, clickedBlock, null);
+                    Bukkit.getPluginManager().callEvent(inspectionEvent);
+                    if (inspectionEvent.isCancelled()) return;
+
                     instance.sendMessage(player, TextMode.Info, Messages.BlockNotClaimed, true);
 
                     // alert plugins of a visualization
-                    Bukkit.getPluginManager().callEvent(new VisualizationEvent(player, Collections.<Claim>emptySet()));
+                    Bukkit.getPluginManager().callEvent(new VisualizationEvent(player, null, Collections.<Claim>emptySet()));
 
                     Visualization.Revert(player);
                 }
@@ -2008,6 +2018,11 @@ class PlayerEventHandler implements Listener
                 //claim case
                 else
                 {
+                    // alert plugins of a claim inspection, return if cancelled
+                    ClaimInspectionEvent inspectionEvent = new ClaimInspectionEvent(player, clickedBlock, claim);
+                    Bukkit.getPluginManager().callEvent(inspectionEvent);
+                    if (inspectionEvent.isCancelled()) return;
+
                     playerData.lastClaim = claim;
                     instance.sendMessage(player, TextMode.Info, Messages.BlockClaimed, claim.getOwnerName());
 
@@ -2015,7 +2030,7 @@ class PlayerEventHandler implements Listener
                     Visualization visualization = Visualization.FromClaim(claim, player.getEyeLocation().getBlockY(), VisualizationType.Claim, player.getLocation());
 
                     // alert plugins of a visualization
-                    Bukkit.getPluginManager().callEvent(new VisualizationEvent(player, claim));
+                    Bukkit.getPluginManager().callEvent(new VisualizationEvent(player, visualization, claim));
 
                     Visualization.Apply(player, visualization);
 
@@ -2094,7 +2109,7 @@ class PlayerEventHandler implements Listener
                     Visualization visualization = Visualization.FromClaim(claim, clickedBlock.getY(), VisualizationType.ErrorClaim, player.getLocation());
 
                     // alert plugins of a visualization
-                    Bukkit.getPluginManager().callEvent(new VisualizationEvent(player, claim));
+                    Bukkit.getPluginManager().callEvent(new VisualizationEvent(player, visualization, claim));
 
                     Visualization.Apply(player, visualization);
 
@@ -2125,7 +2140,7 @@ class PlayerEventHandler implements Listener
             //if in restore nature fill mode
             if (playerData.shovelMode == ShovelMode.RestoreNatureFill)
             {
-                ArrayList<Material> allowedFillBlocks = new ArrayList<Material>();
+                ArrayList<Material> allowedFillBlocks = new ArrayList<>();
                 Environment environment = clickedBlock.getWorld().getEnvironment();
                 if (environment == Environment.NETHER)
                 {
@@ -2375,7 +2390,7 @@ class PlayerEventHandler implements Listener
                                 Visualization visualization = Visualization.FromClaim(result.claim, clickedBlock.getY(), VisualizationType.ErrorClaim, player.getLocation());
 
                                 // alert plugins of a visualization
-                                Bukkit.getPluginManager().callEvent(new VisualizationEvent(player, result.claim));
+                                Bukkit.getPluginManager().callEvent(new VisualizationEvent(player, visualization, result.claim));
 
                                 Visualization.Apply(player, visualization);
 
@@ -2389,7 +2404,7 @@ class PlayerEventHandler implements Listener
                                 Visualization visualization = Visualization.FromClaim(result.claim, clickedBlock.getY(), VisualizationType.Claim, player.getLocation());
 
                                 // alert plugins of a visualization
-                                Bukkit.getPluginManager().callEvent(new VisualizationEvent(player, result.claim));
+                                Bukkit.getPluginManager().callEvent(new VisualizationEvent(player, visualization, result.claim));
 
                                 Visualization.Apply(player, visualization);
                                 playerData.lastShovelLocation = null;
@@ -2406,7 +2421,7 @@ class PlayerEventHandler implements Listener
                         Visualization visualization = Visualization.FromClaim(claim, clickedBlock.getY(), VisualizationType.Claim, player.getLocation());
 
                         // alert plugins of a visualization
-                        Bukkit.getPluginManager().callEvent(new VisualizationEvent(player, claim));
+                        Bukkit.getPluginManager().callEvent(new VisualizationEvent(player, visualization, claim));
 
                         Visualization.Apply(player, visualization);
                     }
@@ -2419,7 +2434,7 @@ class PlayerEventHandler implements Listener
                     Visualization visualization = Visualization.FromClaim(claim, clickedBlock.getY(), VisualizationType.ErrorClaim, player.getLocation());
 
                     // alert plugins of a visualization
-                    Bukkit.getPluginManager().callEvent(new VisualizationEvent(player, claim));
+                    Bukkit.getPluginManager().callEvent(new VisualizationEvent(player, visualization, claim));
 
                     Visualization.Apply(player, visualization);
                 }
@@ -2454,11 +2469,11 @@ class PlayerEventHandler implements Listener
                 instance.sendMessage(player, TextMode.Instr, Messages.ClaimStart);
 
                 //show him where he's working
-                Claim newClaim = new Claim(clickedBlock.getLocation(), clickedBlock.getLocation(), null, new ArrayList<String>(), new ArrayList<String>(), new ArrayList<String>(), new ArrayList<String>(), null);
+                Claim newClaim = new Claim(clickedBlock.getLocation(), clickedBlock.getLocation(), null, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), null);
                 Visualization visualization = Visualization.FromClaim(newClaim, clickedBlock.getY(), VisualizationType.RestoreNature, player.getLocation());
 
                 // alert plugins of a visualization
-                Bukkit.getPluginManager().callEvent(new VisualizationEvent(player, newClaim));
+                Bukkit.getPluginManager().callEvent(new VisualizationEvent(player, visualization, newClaim));
 
                 Visualization.Apply(player, visualization);
             }
@@ -2546,7 +2561,7 @@ class PlayerEventHandler implements Listener
                         Visualization visualization = Visualization.FromClaim(result.claim, clickedBlock.getY(), VisualizationType.ErrorClaim, player.getLocation());
 
                         // alert plugins of a visualization
-                        Bukkit.getPluginManager().callEvent(new VisualizationEvent(player, result.claim));
+                        Bukkit.getPluginManager().callEvent(new VisualizationEvent(player, visualization, result.claim));
 
                         Visualization.Apply(player, visualization);
                     }
@@ -2565,7 +2580,7 @@ class PlayerEventHandler implements Listener
                     Visualization visualization = Visualization.FromClaim(result.claim, clickedBlock.getY(), VisualizationType.Claim, player.getLocation());
 
                     // alert plugins of a visualization
-                    Bukkit.getPluginManager().callEvent(new VisualizationEvent(player, result.claim));
+                    Bukkit.getPluginManager().callEvent(new VisualizationEvent(player, visualization, result.claim));
 
                     Visualization.Apply(player, visualization);
                     playerData.lastShovelLocation = null;
@@ -2604,7 +2619,7 @@ class PlayerEventHandler implements Listener
     }
 
     //determines whether a block type is an inventory holder.  uses a caching strategy to save cpu time
-    private ConcurrentHashMap<Material, Boolean> inventoryHolderCache = new ConcurrentHashMap<Material, Boolean>();
+    private final ConcurrentHashMap<Material, Boolean> inventoryHolderCache = new ConcurrentHashMap<>();
 
     private boolean isInventoryHolder(Block clickedBlock)
     {

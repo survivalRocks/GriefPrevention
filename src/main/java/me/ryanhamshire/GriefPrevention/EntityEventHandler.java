@@ -23,6 +23,7 @@ import me.ryanhamshire.GriefPrevention.events.ProtectDeathDropsEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.World.Environment;
@@ -40,11 +41,14 @@ import org.bukkit.entity.Item;
 import org.bukkit.entity.LightningStrike;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Llama;
+import org.bukkit.entity.Mob;
 import org.bukkit.entity.Monster;
 import org.bukkit.entity.Mule;
+import org.bukkit.entity.Panda;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.entity.Rabbit;
+import org.bukkit.entity.Slime;
 import org.bukkit.entity.Tameable;
 import org.bukkit.entity.ThrownPotion;
 import org.bukkit.entity.Vehicle;
@@ -70,6 +74,7 @@ import org.bukkit.event.entity.EntityInteractEvent;
 import org.bukkit.event.entity.EntityPortalEnterEvent;
 import org.bukkit.event.entity.EntityPortalExitEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
+import org.bukkit.event.entity.EntityTargetEvent;
 import org.bukkit.event.entity.ExpBottleEvent;
 import org.bukkit.event.entity.ItemMergeEvent;
 import org.bukkit.event.entity.ItemSpawnEvent;
@@ -83,6 +88,7 @@ import org.bukkit.event.weather.LightningStrikeEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.metadata.MetadataValue;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.projectiles.ProjectileSource;
@@ -100,13 +106,15 @@ import java.util.UUID;
 public class EntityEventHandler implements Listener
 {
     //convenience reference for the singleton datastore
-    private DataStore dataStore;
-    GriefPrevention instance;
+    private final DataStore dataStore;
+    private final GriefPrevention instance;
+    private final NamespacedKey luredByPlayer;
 
     public EntityEventHandler(DataStore dataStore, GriefPrevention plugin)
     {
         this.dataStore = dataStore;
         instance = plugin;
+        luredByPlayer = new NamespacedKey(plugin, "lured_by_player");
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOWEST)
@@ -334,12 +342,10 @@ public class EntityEventHandler implements Listener
         }
 
         //make a list of blocks which were allowed to explode
-        List<Block> explodedBlocks = new ArrayList<Block>();
+        List<Block> explodedBlocks = new ArrayList<>();
         Claim cachedClaim = null;
-        for (int i = 0; i < blocks.size(); i++)
+        for (Block block : blocks)
         {
-            Block block = blocks.get(i);
-
             //always ignore air blocks
             if (block.getType() == Material.AIR) continue;
 
@@ -667,16 +673,39 @@ public class EntityEventHandler implements Listener
         if (entity instanceof Monster) return true;
 
         EntityType type = entity.getType();
-        if (type == EntityType.GHAST || type == EntityType.MAGMA_CUBE || type == EntityType.SHULKER || type == EntityType.POLAR_BEAR)
+        if (type == EntityType.GHAST || type == EntityType.MAGMA_CUBE || type == EntityType.SHULKER)
             return true;
 
+        if (type == EntityType.SLIME)
+            return ((Slime) entity).getSize() > 0;
+
         if (type == EntityType.RABBIT)
-        {
-            Rabbit rabbit = (Rabbit) entity;
-            if (rabbit.getRabbitType() == Rabbit.Type.THE_KILLER_BUNNY) return true;
-        }
+            return ((Rabbit) entity).getRabbitType() == Rabbit.Type.THE_KILLER_BUNNY;
+
+        if (type == EntityType.PANDA)
+            return ((Panda) entity).getMainGene() == Panda.Gene.AGGRESSIVE;
+
+        if (type == EntityType.HOGLIN || type == EntityType.POLAR_BEAR)
+            return !entity.getPersistentDataContainer().has(luredByPlayer, PersistentDataType.BYTE) && ((Mob) entity).getTarget() != null;
 
         return false;
+    }
+
+    // Tag passive animals that can become aggressive so we can tell whether or not they are hostile later
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
+    public void onEntityTarget(EntityTargetEvent event)
+    {
+        if (!GriefPrevention.instance.claimsEnabledForWorld(event.getEntity().getWorld())) return;
+
+        EntityType entityType = event.getEntityType();
+        if (entityType != EntityType.HOGLIN && entityType != EntityType.POLAR_BEAR)
+            return;
+
+        if (event.getReason() == EntityTargetEvent.TargetReason.TEMPT)
+            event.getEntity().getPersistentDataContainer().set(luredByPlayer, PersistentDataType.BYTE, (byte) 1);
+        else
+            event.getEntity().getPersistentDataContainer().remove(luredByPlayer);
+
     }
 
     //when an entity is damaged
@@ -812,8 +841,8 @@ public class EntityEventHandler implements Listener
                             if (!pvpEvent.isCancelled())
                             {
                                 event.setCancelled(true);
-                                return;
                             }
+                            return;
                         }
                     }
                 }
@@ -882,8 +911,8 @@ public class EntityEventHandler implements Listener
                                 event.setCancelled(true);
                                 if (sendErrorMessagesToPlayers)
                                     GriefPrevention.sendMessage(attacker, TextMode.Err, Messages.CantFightWhileImmune);
-                                return;
                             }
+                            return;
                         }
 
                         Claim defenderClaim = this.dataStore.getClaimAt(defender.getLocation(), false, defenderData.lastClaim);
@@ -899,8 +928,8 @@ public class EntityEventHandler implements Listener
                                 event.setCancelled(true);
                                 if (sendErrorMessagesToPlayers)
                                     GriefPrevention.sendMessage(attacker, TextMode.Err, Messages.PlayerInPvPSafeZone);
-                                return;
                             }
+                            return;
                         }
                     }
                 }
@@ -943,8 +972,8 @@ public class EntityEventHandler implements Listener
                                 {
                                     event.setCancelled(true);
                                     if (damager instanceof Creature) ((Creature) damager).setTarget(null);
-                                    return;
                                 }
+                                return;
                             }
                         }
                     }
@@ -1032,8 +1061,8 @@ public class EntityEventHandler implements Listener
                                 if (ownerName == null) ownerName = "someone";
                                 String message = GriefPrevention.instance.dataStore.getMessage(Messages.NoDamageClaimedEntity, ownerName);
                                 if (sendErrorMessagesToPlayers)
-                                    GriefPrevention.sendMessage(attacker, TextMode.Err, message, true);
-                                PreventPvPEvent pvpEvent = new PreventPvPEvent(new Claim(subEvent.getEntity().getLocation(), subEvent.getEntity().getLocation(), null, new ArrayList<String>(), new ArrayList<String>(), new ArrayList<String>(), new ArrayList<String>(), null));
+                                    GriefPrevention.sendMessage(attacker, TextMode.Err, message);
+                                PreventPvPEvent pvpEvent = new PreventPvPEvent(new Claim(subEvent.getEntity().getLocation(), subEvent.getEntity().getLocation(), null, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), null));
                                 Bukkit.getPluginManager().callEvent(pvpEvent);
                                 if (!pvpEvent.isCancelled())
                                 {
@@ -1402,8 +1431,8 @@ public class EntityEventHandler implements Listener
                         {
                             event.setIntensity(effected, 0);
                             GriefPrevention.sendMessage(thrower, TextMode.Err, Messages.CantFightWhileImmune);
-                            continue;
                         }
+                        continue;
                     }
 
                     Claim defenderClaim = this.dataStore.getClaimAt(effectedPlayer.getLocation(), false, defenderData.lastClaim);
@@ -1416,7 +1445,6 @@ public class EntityEventHandler implements Listener
                         {
                             event.setIntensity(effected, 0);
                             GriefPrevention.sendMessage(thrower, TextMode.Err, Messages.PlayerInPvPSafeZone);
-                            continue;
                         }
                     }
                 }
@@ -1424,7 +1452,7 @@ public class EntityEventHandler implements Listener
         }
     }
 
-    public static final HashSet<PotionEffectType> positiveEffects = new HashSet<PotionEffectType>(Arrays.asList
+    public static final HashSet<PotionEffectType> positiveEffects = new HashSet<>(Arrays.asList
             (
                     PotionEffectType.ABSORPTION,
                     PotionEffectType.DAMAGE_RESISTANCE,
