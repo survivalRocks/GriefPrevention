@@ -154,8 +154,8 @@ public class Visualization
         }
         else if (visualizationType == VisualizationType.RestoreNature)
         {
-            cornerBlockData = Material.DIAMOND_BLOCK.createBlockData();
-            accentBlockData = Material.DIAMOND_BLOCK.createBlockData();
+            cornerBlockData = Material.YELLOW_CONCRETE.createBlockData();
+            accentBlockData = Material.YELLOW_CONCRETE.createBlockData();
         }
         else
         {
@@ -164,7 +164,7 @@ public class Visualization
             accentBlockData = Material.MAGENTA_CONCRETE.createBlockData();
         }
 
-        addClaimElements(claim.getLesserBoundaryCorner(), claim.getGreaterBoundaryCorner(), locality, height, cornerBlockData, accentBlockData, 10);
+        addClaimElements(claim.getLesserBoundaryCorner(), claim.getGreaterBoundaryCorner(), locality, height, cornerBlockData, accentBlockData, 1);
     }
 
     //adds a general claim cuboid (represented by min and max) visualization to the current visualization
@@ -183,10 +183,10 @@ public class Visualization
         //that will be added later for only the visualization elements within visualization range
 
         //locality
-        int minx = locality.getBlockX() - 75;
-        int minz = locality.getBlockZ() - 75;
-        int maxx = locality.getBlockX() + 75;
-        int maxz = locality.getBlockZ() + 75;
+        int minx = locality.getBlockX() - 150;
+        int minz = locality.getBlockZ() - 150;
+        int maxx = locality.getBlockX() + 150;
+        int maxz = locality.getBlockZ() + 150;
 
         //top line
         newElements.add(new VisualizationElement(new Location(world, smallx, 0, bigz), cornerBlockData, Material.AIR.createBlockData()));
