@@ -730,13 +730,14 @@ public class EntityEventHandler implements Listener
         if (event.getEntity() instanceof Mule && !GriefPrevention.instance.config_claims_protectDonkeys) return;
         if (event.getEntity() instanceof Llama && !GriefPrevention.instance.config_claims_protectLlamas) return;
         //protected death loot can't be destroyed, only picked up or despawned due to expiration
+        /*
         if (event.getEntityType() == EntityType.DROPPED_ITEM)
         {
             if (event.getEntity().hasMetadata("GP_ITEMOWNER"))
             {
                 event.setCancelled(true);
             }
-        }
+        }*/
 
         //protect pets from environmental damage types which could be easily caused by griefers
         if (event.getEntity() instanceof Tameable && !GriefPrevention.instance.pvpRulesApply(event.getEntity().getWorld()))
